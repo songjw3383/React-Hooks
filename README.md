@@ -70,3 +70,34 @@ const App = () => {
   return { value, onChange};
 };
 ```
+### 1.2 useTabs 
+* content의 정보를 tab/content로 구성된 배열로 각각 지정후 <button>{section.tab}</button>을 사용하여 버튼표현
+* 각각의 section content를 보여주기 위함이 목적
+* changeItem으로 자동으로 버튼을 클릭하게 되면 section이 바뀌게 만들고 기본적으로 setCurrentIndex 를 가짐
+* content.map 에서 section과 index가 있음, 그리고 버튼의 onClick에 changeItem을 함수로 만들어줬음
+> 클릭할시 index가 무엇이든간에 changeItem(index)를 실행시켜주고 이것은 setCurrentIndex의 item을 바꿔줄것이다. 또한 이는 State를 바꿔줌 그리고 currentItem의 currentIndex를 바꿔줄것이다.
+```
+///코드///
+const useTabs = (initialTab, allTabs) => {
+  if(!allTabs || !Array.isArray(allTabs)) {
+    return;
+  }
+  const [currentIndex, setCurrentIndex] = useState(initialTab);
+  return {
+    currentItem: allTabs[currentIndex],
+    changeItem: setCurrentIndex
+  };
+};
+
+const App = () => {
+  const { currentItem, changeItem } = useTabs(0, content);
+  return (
+    <div className="App">
+      {content.map((section, index) => (
+        <button onClick={() => changeItem(index)}>{section.tab}</button>
+      ))}
+      <div>{currentItem.content}</div>
+    </div>
+  );
+};
+```
