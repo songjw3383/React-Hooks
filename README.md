@@ -1,15 +1,15 @@
 # React-Hooks 10
 
-- [ ] useTitle 
-- [ ] useInput
-- [ ] useClick
+- [x] useTitle 
+- [x] useInput
+- [x] useClick
 - [ ] useFadeIn
 - [ ] useFullscreen
 - [ ] useHover
 - [ ] useNetwork
 - [ ] useNotification
 - [ ] useScroll
-- [ ] useTabs
+- [x] useTabs
 - [ ] usePreventLeave
 - [ ] useConfirm
 - [ ] useAxios
@@ -149,3 +149,71 @@ return (
 * 즉, useEffect는 3가지다. **ComponentDidMount, ComponentWillUnMount, ComponentDidUpdate**
 
 ### 2.1 useTitle
+* 문서의 제목을 업데이트 시켜주는걸 담당하는 hooks
+* 제목을 업데이트할 수 있게 setTitle을 리턴
+* App내부에서 useTitle의 디폴트 값을 Loading... 으로 해줌
+* updateTitle 함수를 만들어서 HTML tage의 title을 얻어옴 -> document.querySelector("title). 그리고 htmlTitle.innerText 는 title(첫번째 인자) 로 해줌.
+* 그 후, useEffect는 component가 마운트 될때 updateTitle을 부른다. 그리고 title이 업데이트 되면 updateTitle을 다시부른다.
+* **정리하면,**
+1. 초기값은 loading이며 title도 loading 이다. 그리고 useEffect가 마운트되면 html.innerText도 loading이 되는 것.
+2. 그리고 어디선가 titleUpdater을 실행하여 변화를 주면 deps의 값인 title이 바뀌면서 전체적으로 새로고침해주어 title값이 변경되는것이다.
+```
+const useTitle = (initialTitle) => {
+  const [title, setTitle] = useState(initialTitle);
+  const updateTitle = () => {
+    const htmlTitle = document.querySelector("title")
+    htmlTitle.innerText = title;
+  };
+  useEffect(updateTitle,[title]);
+  return setTitle;
+}
+
+const App = () => {
+  const titleUpdater = useTitle("Loading...");
+  setTimeout(() =>titleUpdater("Home"), 5000); //타임아웃 5초 후 Home으로 바뀌도록 지정
+  return (
+    <div className="App">
+      <div>Hi</div>
+    </div>
+  )
+};
+```
+### 2.2 useClick
+* useClick은 매우 간단한 hooks 
+* references란? 기본적으로 component의 어떤 부분을 선택할 수 있는 방법. (document.getElementById()를 사용한것과 동등)
+**recap**
+1. useClick을 사용해 useRef()를 만들고 같은 refernece를 return (return element)
+2. reference를 title에 줌(h1태그에)
+3. 그리고 useEffect()는 referent 안에 element.current가 있는지 확인하는 것, 그리고 조건이 만족되면 click이벤트를 부여하기로 설정함
+
+* useEffect() 가 mount 되었을때 첫번째 if문이 실행됨. 그리고 function을 리턴 받았다면 그 function은 componentWillUnMount로 부터 호출된것
+* 즉, 첫번째 component가 mount되면  addEvenetListener작동! 그리고 deps가 없기 때문에 componentDidMount때 단 한번만 실행되라는 의미가 된다. 그리고 2번째 function을 return 할건데, 이것은 componentWillUnMount때 호출될것이다. (두번째를 하는 이유는? component가 마운트되지 않았을때 eventListener가 배치되게 하고 싶지 않기 때문)
+```
+const useClick = (onClick) => {
+  if (typeof onClick !== "function") {
+    return;
+  }
+  const element = useRef();
+  useEffect(() => {
+    if (element.current) {
+      element.current.addEventListener("click", onClick);
+    }
+    return () => {
+      if (element.current) {
+        element.current.removeEventListener("click", onClick);
+      }
+    };
+  }, []);
+  return element;
+};
+
+const App = () => {
+  const sayHello = () => console.log("say hello");
+  const title = useClick(sayHello);
+  return (
+    <div className="App">
+      <h1 ref={title}>Hi</h1>
+    </div>
+  );
+};
+```
