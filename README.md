@@ -78,6 +78,22 @@ const App = () => {
 > 클릭할시 index가 무엇이든간에 changeItem(index)를 실행시켜주고 이것은 setCurrentIndex의 item을 바꿔줄것이다. 또한 이는 State를 바꿔줌 그리고 currentItem의 currentIndex를 바꿔줄것이다.
 ```
 ///코드///
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+
+import "./styles.css";
+
+const content = [
+  {
+    tab: "Section 1",
+    content: "I'm the content of the Section 1"
+  },
+  {
+    tab: "Section 2",
+    content: "I'm the content of the Section 2"
+  }
+];
+
 const useTabs = (initialTab, allTabs) => {
   if(!allTabs || !Array.isArray(allTabs)) {
     return;
@@ -101,3 +117,35 @@ const App = () => {
   );
 };
 ```
+### 2.0 Introduction to useEffect
+* useEffect는 componentDidmount의 역할을 해서 새로고침할때 마다 Hello 출력, 또한 componentDidUpdate의 역할도 하기 때문에 number과 aNumber버튼을 누를때마다 sayHello도 실행하게 됨
+```
+const sayHello = () => console.log("hello");
+  useEffect(() => {
+    sayHello();
+    ...
+```    
+* useEffect는 2개의 인자를 받는다
+1. 첫번째는 function으로써의 effect
+2. 두번째는 dependency, 만약 deps가 있다면 effect는 deps리스트에 있는 값일 때만 값이 변하도록 활성화 될것이다. ->ComponentWillUpdate
+```
+//2번 예시//
+const App = () => {
+const sayHello = () => console.log("hello");
+const [number, setNumber] = useState(0);
+const [aNumber, setAnumber] = useState(0);
+useEffect(sayHello, [number]);
+
+return (
+  <div className = "App">
+    <div>Hi</div>
+    <button onClick={() => setNumber(number + 1)}>{number}</button>
+    <button onClick={() => setAnumber(aNumber + 1)}>{aNumber}</button>
+ </div>
+);
+};
+```
+> useEffect는 기본적으로 sayHello를 출력, 그리고 deps리스트에 number값만 존재하기때문에 number클릭시에만 hello를 출력. (aNumber은 리스트에 없기때문에 hello를 출력하지 않음)
+* 즉, useEffect는 3가지다. **ComponentDidMount, ComponentWillUnMount, ComponentDidUpdate**
+
+### 2.1 useTitle
