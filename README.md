@@ -217,3 +217,58 @@ const App = () => {
   );
 };
 ```
+
+### 2.3 useConfirm & usePreventLeave
+> useState와 useEffect를 사용하지 않는 hooks
+**1. useConfirm**
+* 보통 useConfirm 은 사용자가 무언가를 하기전에 확인하는 것, 사용자가 버튼을 클릭하는 작업을 하면 이벤트를 실행하기 전에 메세지를 보여주고 싶은 것 (확인메세지 같은것)
+* 순서
+1. Delete the world 버튼을 클릭하게되면 onClick으로 부터 confirmDelete를 실행하게됨.
+2. confirmDelete는 실제로는 confirmAction 이고 confirmAction은 브라우저에 있는 confirm을 실행하게됨.
+3. true라고 하면 callback이 실행되면서 deleteWorld의 메세지가 콘솔에 나오게 된다.
+* 또한 false일시 console에 aborted출력을 위해 abort함수를 만들어주었다.
+* onConfirm와 onCancel 에 대한 조건문 작성
+```
+const useConfirm = (message = "", onConfirm, onCancel) => {
+  if(!onConfirm || typeof onConfirm !== "function") {
+    return;
+  }
+  if(onCancel && typeof onCancel !== "function"){
+    return;
+  }
+  const confirmAction = () => {
+    if(confirm(message)){
+      onConfirm();
+    } else {
+      onCancel();
+    }
+  }
+  return confirmAction;
+}
+```
+**2. usePreventLeave**
+* 보통 웹사이트에 볼수 있고 window에서 나갈때 주의 메세지임
+* beforeunload는 window가 닫히기 전에 function이 실행되는 것을 허락함 -> 메세지를 표시해주기 위해 사용됨.
+* Protect는 addEventListener로 beforeunload와 listener을 실행하고, Unprotect는 removeEventListener로 event를 삭제시켜 메세지를 안나오게한다.
+* event.returnValue = ""; 를 적어줘야 메세지가 실행됨(Chrome에서는..)
+```
+const usePreventLeave = () => {
+  const listener = (event) => {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+    const enablePrevent = () => window.addEventListener("beforeunload", listener)
+    const disablePrevent = () => window.removeEventListener("beforeunload", listener)
+    return { enablePrevent, disablePrevent};
+  }
+
+const App = () => {
+  const {enablePrevent, disablePrevent} = usePreventLeave();
+  return (  
+    <div className="App">
+      <button onClick = {enablePrevent}>Protect</button>
+      <button onClick = {disablePrevent}>unprotect</button>
+    </div>
+  );
+};
+```
