@@ -3,15 +3,15 @@
 - [x] useTitle 
 - [x] useInput
 - [x] useClick
-- [ ] useFadeIn
+- [x] useFadeIn
 - [ ] useFullscreen
-- [ ] useHover
-- [ ] useNetwork
+- [x] useHover
+- [x] useNetwork
 - [ ] useNotification
 - [ ] useScroll
 - [x] useTabs
-- [ ] usePreventLeave
-- [ ] useConfirm
+- [x] usePreventLeave
+- [x] useConfirm
 - [ ] useAxios
 ## 0207 ~
 ### 0.Introduction
@@ -220,7 +220,7 @@ const App = () => {
 
 ### 2.3 useConfirm & usePreventLeave
 > useState와 useEffect를 사용하지 않는 hooks
-**1. useConfirm**
+**1.) useConfirm**
 * 보통 useConfirm 은 사용자가 무언가를 하기전에 확인하는 것, 사용자가 버튼을 클릭하는 작업을 하면 이벤트를 실행하기 전에 메세지를 보여주고 싶은 것 (확인메세지 같은것)
 * 순서
 1. Delete the world 버튼을 클릭하게되면 onClick으로 부터 confirmDelete를 실행하게됨.
@@ -246,7 +246,7 @@ const useConfirm = (message = "", onConfirm, onCancel) => {
   return confirmAction;
 }
 ```
-**2. usePreventLeave**
+**2.) usePreventLeave**
 * 보통 웹사이트에 볼수 있고 window에서 나갈때 주의 메세지임
 * beforeunload는 window가 닫히기 전에 function이 실행되는 것을 허락함 -> 메세지를 표시해주기 위해 사용됨.
 * Protect는 addEventListener로 beforeunload와 listener을 실행하고, Unprotect는 removeEventListener로 event를 삭제시켜 메세지를 안나오게한다.
@@ -272,3 +272,107 @@ const App = () => {
   );
 };
 ```
+### 2.4 useBeforeLeave
+* 기본적으로 탭을 닫을때 실행되는 function.
+* 문서에 eventListener를 추가, mount가 되지 않았을 땐 return 해준다.
+* handle 함수에 event 내부에 clientY를 event로 하고 브라우저 위로 벗어날때만 메세지가 나오게 한다.(조건 : clientY <= 0)
+```
+const useBeforeLeave = (onBefore) => {
+  if(typeof onBefore !=="function"){
+    return;
+  }
+  const handle = (event) => {
+    const { clientY } = event;
+    if(clientY <= 0){
+    onBefore();
+    }
+  };
+  useEffect(() => {
+    document.addEventListener("mouseleave",handle)
+    return () => document.removeEventListener("mouseleave",handle)
+  }, []);
+
+}
+
+const App = () => {
+  const begForLife = () => console.log("plz dont leave");
+  useBeforeLeave(begForLife);
+  return (
+    <div className="App">
+      <h1>Hello</h1>
+    </div>
+  );
+};
+```
+### 2.5 useFadeIn & useNetwork
+** 1.) useFadeIn **
+* 서서히 나타나게 하는 효과, CSS로도 가능하지만 여기선 hooks + animation 으로 표현.
+* element의 opactiy의 기본값은 0으로 설정.
+> return {ref : element, style: {opacity: 0}};
+* reference를 만들고, 리턴해준다
+* App 내부에 faceInH1과 faceInP 생성 후 useFadeIn() 함수 호출
+* return 할때 props 처럼 ref와 style을 반환해준다. 그리고 h1과 p 내부에서 {... } 를 사용하여 리턴값을 받아온다.
+* useEffect() 내부에선 componentDidMount 시에만 동작하게 deps값을 비워준다.
+* 또한 element.current 일때, opacity를 1로 해주고 transition(애니메이션 효과)를 해준다.
+* 마지막으로 opacity에 대한 duration의 기본값과, delay에 대한 기본값을 useFadeIn에 적어준다.
+```
+const useFadeIn = (duration = 1, delay = 0) => {
+  if(typeof duration !== "number" || typeof delay !== "number") {
+    return;
+  }
+  const element = useRef();
+  useEffect(() => {
+    if(element.current){
+      const { current } = element;
+      current.style.transition = `opacity ${duration}s ease-in-out ${delay}s`;
+      current.style.opacity = 1;
+    }
+  },[])
+  return {ref : element, style: {opacity: 0}};
+}
+
+const App = () => {
+  const faceInH1 = useFadeIn(1,2);
+  const fadeInP = useFadeIn(5, 10);
+  return (
+    <div className="App">
+      <h1 {...faceInH1}>Hello</h1>
+      <p {...fadeInP}>helhelehelehlehle </p>
+    </div>
+```
+** 2.) useNetwork ** 
+* network의 상태가 바뀔때마다 함수를 부르게 한다.
+* useNetwork 는 새로운 status를 반환하고, 내부의 useState의 기본값을 navigator.onLine으로 설정해준다.
+* 그리고 navigator.onLine은 true와 false를 말할것이다.( navigator.onLine을 기본값으로 설정해줌으로써 online인지 offline인지 알수있게 되는 것 이다)
+* useEffect에는 eventlistener을 추가 해주고 (addEventListener : online/offline, 또한 removeEvenetListener) , online/offline 상태이면 handleChange를 실행하게한다.
+* 상태가 바뀔때마다 setStatus를 해준다.
+* handleNetworkChange 은 on/offline 일때마다 메세지를 출력하기 위한 함수
+```
+const useNetwork = onChange => {
+  const [status, setStatus] = useState(navigator.onLine);
+  const handleChange = () => {
+    if(typeof onChange === "function"){
+      onChange(navigator.onLine)
+    }
+    setStatus(navigator.onLine);
+  };
+  useEffect(() => {
+    window.addEventListener("online", handleChange);
+    window.addEventListener("offline", handleChange);
+    () => {
+      window.removeEventListener("online", handleChange);
+      window.removeEventListener("offline", handleChange);
+    };
+  }, []);
+  return status;
+};
+const App = () => {
+  const handleNetworkChange = (online) => {
+    console.log(online?"We just went online" : "We are offline");
+  }
+ const onLine = useNetwork(handleNetworkChange);
+  return (
+    <div className="App">
+      <h1>{onLine ? "Online" : "Offline"}</h1>
+    </div>
+ ```
