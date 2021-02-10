@@ -446,3 +446,5 @@ const App = () => {
   );
 };
 ```
+### 2.7 useNotification
+* 알람이 실행되는 function
