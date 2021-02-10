@@ -447,4 +447,41 @@ const App = () => {
 };
 ```
 ### 2.7 useNotification
-* 알람이 실행되는 function
+* 알람이 실행되는 function(ex: 구글 크롬 알람이나 모든 알람)
+* Notification API 를 이용
+1. Notification.permission은 읽기전용이다.
+> default인 경우 모든 알람이 허용되지 않는다. (broweser는 value가 denied인것처럼 행동하게한다.)
+```
+const useNotification = (title, options) => {
+  if(!("Notification" in window)) {
+    return;
+  }
+  useEffect(() => {
+
+  })
+  const fireNotif = () => {
+    if(Notification.permission !== "granted"){
+      Notification.requestPermission().then(permission => {
+        if(permission == " granted") {
+          new Notification(title, options)
+        } else {
+          return;
+        }
+      })
+    } else {
+      new Notification(title, options)
+    }
+  };
+  return fireNotif;
+} 
+
+const App = () => {
+  const triggerNotif = useNotification("Can i steal your info", {
+    body:"I love you don't you"});
+  return (
+    <div className="App" style={{ height: "1000vh"}}>
+      <button onClick={triggerNotif}>Hello</button>
+    </div>      
+  );
+};
+```
