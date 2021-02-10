@@ -4,11 +4,11 @@
 - [x] useInput
 - [x] useClick
 - [x] useFadeIn
-- [ ] useFullscreen
+- [x] useFullscreen
 - [x] useHover
 - [x] useNetwork
 - [ ] useNotification
-- [ ] useScroll
+- [x] useScroll
 - [x] useTabs
 - [x] usePreventLeave
 - [x] useConfirm
@@ -376,3 +376,73 @@ const App = () => {
       <h1>{onLine ? "Online" : "Offline"}</h1>
     </div>
  ```
+### 2.6 useScroll & useFullscreen
+** 1.) useScroll **
+* useState의 기본 값을 x:0, y:0 이라고 한다.
+* h1 태그 내에 style 중 color를 y > 100 이상일때 red로 하고 아닐땐 blue 색상이게 삼항연산자을 사용해준다. 그리고 app의 height를 1000vh 로 해주어 스크롤을 만들어준다.
+> color: y> 100 ? " red" : "blue"
+* onScroll 함수는 scroll의 값을 측정해 setState로 값을 지정해준다.
+```
+const useScroll = () => {
+  const[state,setState] = useState({
+    x: 0,
+    y: 0
+  });
+  const onScroll = () => {
+    setState({ y: window.scrollY, x:window.scrollX});
+  }
+  useEffect(() => {
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [])
+  return state;
+}
+const App = () => {
+  const { y} = useScroll();
+  return (
+    <div className="App" style = {{height: "1000vh" }}>
+      <h1 style = {{position:"fixed", color: y> 100 ? " red" : "blue"}}>hi</h1>
+    </div>
+  );
+};
+```
+** 2.) useFullScreen **
+* fullscreen을 만들어 주기위한 버튼을 생성
+* useFullscreen 함수를 만들어주고 내부에 두개의 함수 생성
+* callback() 함수로 메세지전달
+```
+const useFullscreen = (callback) => {
+  const element = useRef();
+  const triggerFull = () => {
+    if(element.current) {
+      element.current.requestFullscreen();
+    if(callback && typeof callback === "function")
+      callback(true)
+    }
+  };
+  const exitFull = () => {
+    document.exitFullscreen();
+    if(callback && typeof callback === "function")
+    callback(false)
+  }
+  return {element, triggerFull, exitFull };
+}
+
+const App = () => {
+  const onFullS = (isFull) => {
+    console.log(isFull ? "We are full" : "We are small")
+  }
+  const {element, triggerFull, exitFull} = useFullscreen();
+  return (
+    <div className="App" style = {{height: "1000vh" }}>
+      <div ref={element}>
+      <img
+        src="https://kc-media-cdn-live.azureedge.net/cache/c/2/a/8/2/4/c2a824656c882cf22ca460221a651d379a7d7f1c.jpg" 
+        />
+      <button onClick={exitFull}>Exit fullscreen</button> 
+      </div>
+      <button onClick={triggerFull}>Make fullscreen</button>    
+    </div>
+  );
+};
+```
