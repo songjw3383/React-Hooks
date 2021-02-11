@@ -449,10 +449,11 @@ const App = () => {
 ### 2.7 useNotification
 * 알람이 실행되는 function(ex: 구글 크롬 알람이나 모든 알람)
 * Notification API 를 이용
+* Notification 이 window에서 사용되기 위해 아닐경우 return.
 1. Notification.permission은 읽기전용이다.
-2. permission은 default이며 경우 모든 알람이 허용되지 않는다. (broweser는 value가 denied인것처럼 행동하게한다.)
+2. permission은 default일 경우 모든 알람이 허용되지 않는다. (broweser는 value가 denied인것처럼 행동하게한다.)
 3. 여기선 granted 로 지정
-
+4. granted가 아닐경우 requestPermission().then(permission => {} 으로 다시 확인
 ```
 const useNotification = (title, options) => {
   if(!("Notification" in window)) {
@@ -489,11 +490,12 @@ const App = () => {
 ```
 ### 2.8 useAxios
 * useAxios.js
+* Axios? -> HTTP request를 만드는 것
 1. useAxios 기본값으로 axiosClient 요청
 2. axios는 약간의 customization과 configuration를 허용
 > 예로 axios는 디폴트 URL을 설정하거나, 자동으로 헤더를 설정하는것들을 허용
 3. axios instance를 얻을 것이다. 얻지 못하면 import한 axios를 전달
 > 그들이 axios instance를 보내지않으면 패키지에서 axios를 얻어서 전달할것이다. 그리하여 configuration 후 헤더로 보낼 수 있다.
-
-* index.js
-1. Axios는 첫번째로 자기 url을 받았다.
+4. 만약, opts.url이 존재하지 않을 경우 return. -> URL이 필요하기 때문에
+5. useEffect에서 axios호출. update를 하고 싶지 않기 때문에 deps값을 비워둔다.
+6. refetch 기능 추가
