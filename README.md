@@ -7,12 +7,12 @@
 - [x] useFullscreen
 - [x] useHover
 - [x] useNetwork
-- [ ] useNotification
+- [x] useNotification
 - [x] useScroll
 - [x] useTabs
 - [x] usePreventLeave
 - [x] useConfirm
-- [ ] useAxios
+- [x] useAxios
 ## 0207 ~
 ### 0.Introduction
 **요구사항**
